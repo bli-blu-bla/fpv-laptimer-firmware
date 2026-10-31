@@ -1,0 +1,52 @@
+# Every push and pull request: the firmware builds, the host unit tests pass,
+# the page type-checks, tests and builds. Releases: release.yml; the page
+# on GitHub Pages: pages.yml.
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+jobs:
+  firmware:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0 # git describe: the firmware's version
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+      # The platform, ESP-IDF and toolchains (~85 s to install). The key
+      # follows platformio.ini, which pins the platform version.
+      - uses: actions/cache@v6
+        with:
+          path: |
+            ~/.platformio
+            !~/.platformio/.cache
+          key: platformio-${{ runner.os }}-${{ hashFiles('firmware/platformio.ini') }}
+      - name: Build
+        run: |
+          pip install --quiet platformio
+          pio run -d firmware -e esp32c5
+          pio test -d firmware -e native
+          tools/stage_firmware.py
+
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - working-directory: web
+        run: |
+          npm ci --no-audit --no-fund
+          npm run check
+          npm test
+          npm run build
+      - name: Scripts
+        run: bash -n tools/flash_c5_many.sh tools/update_firmware.sh

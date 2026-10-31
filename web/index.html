@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <title>Laptimer Firmware</title>
+  </head>
+  <body>
+    <header class="top">
+      <div class="brand">
+        <img src="./favicon.svg" alt="" width="28" height="28" />
+        <div>
+          <h1>FPV Laptimer · Firmware</h1>
+          <p class="muted small">ESP32-C5 flashen, ansehen und benennen, direkt aus dem Browser</p>
+        </div>
+      </div>
+      <nav class="small">
+        <a href="https://github.com/bli-blu-bla/fpv-laptimer-firmware">Quellcode</a>
+        <a href="https://bli-blu-bla.github.io/fpv-laptimer/">Laptimer</a>
+      </nav>
+    </header>
+
+    <main>
+      <p id="no-serial" class="notice" hidden>
+        Dieser Browser kann nicht auf USB-Geräte zugreifen. Die Seite braucht <b>Chrome</b> oder <b>Edge</b> am
+        Computer (Web Serial); Firefox, Safari und Handys können das nicht.
+      </p>
+
+      <section class="panel" id="board-panel">
+        <div class="panel-head">
+          <span class="dot" id="link-dot"></span> Board
+          <span class="end muted small" id="link-status">nicht verbunden</span>
+        </div>
+        <div class="panel-body stack">
+          <div class="row">
+            <button class="btn btn-primary" id="connect">Board verbinden …</button>
+            <button class="btn btn-secondary" id="disconnect" hidden>Trennen</button>
+            <span class="muted small grow" id="connect-hint">
+              Board per USB anstecken, dann verbinden. Läuft auf diesem Rechner der Laptimer-Server, hat er den Port
+              offen: dort flashen (Boards → Firmware) oder den Server beenden.
+            </span>
+          </div>
+          <dl class="info" id="info" hidden>
+            <dt>Firmware</dt>
+            <dd><span id="info-version">–</span> <span id="info-tag"></span></dd>
+            <dt>Chip</dt>
+            <dd id="info-chip">–</dd>
+            <dt>Stand</dt>
+            <dd id="info-date">–</dd>
+            <dt>Protokoll</dt>
+            <dd id="info-proto">–</dd>
+            <dt>PHY</dt>
+            <dd id="info-phy" class="small">–</dd>
+          </dl>
+          <form class="row" id="name-form" hidden>
+            <label class="grow stack-tight">
+              <span class="small muted">Name des Boards (bleibt beim Flashen, der Laptimer zeigt ihn an)</span>
+              <input id="name" maxlength="64" autocomplete="off" placeholder="z. B. Gate links" />
+            </label>
+            <button class="btn btn-secondary" type="submit" id="name-save">Speichern</button>
+            <button class="btn btn-ghost" type="button" id="name-clear">Löschen</button>
+          </form>
+          <span class="small" id="name-status"></span>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          Firmware aufspielen
+          <span class="end muted small" id="offered">–</span>
+        </div>
+        <div class="panel-body stack">
+          <div class="row">
+            <button class="btn btn-primary" id="flash" disabled>Aufspielen</button>
+            <span class="muted small grow" id="flash-hint">
+              Schreibt die neueste Firmware auf das verbundene Board, oder auf ein Board, das du danach wählst.
+            </span>
+          </div>
+          <div id="flash-progress" class="stack-tight" hidden>
+            <span class="small" id="flash-stage"></span>
+            <div class="bar"><div class="fill" id="flash-fill"></div></div>
+          </div>
+          <span class="error small" id="flash-error"></span>
+          <pre class="log small" id="flash-log" hidden></pre>
+          <span class="muted small">
+            Hängt das Board, oder hatte es noch nie diese Firmware: <b>BOOT</b> halten, <b>RESET</b> drücken, BOOT
+            loslassen, dann noch einmal aufspielen.
+          </span>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          Pegel
+          <span class="end muted small" id="level-status"></span>
+        </div>
+        <div class="panel-body stack">
+          <div class="row">
+            <label class="grow stack-tight">
+              <span class="small muted">Kanäle (Name=MHz)</span>
+              <input id="channels" value="R1=5658 R3=5732 R6=5843 R8=5917" autocomplete="off" />
+            </label>
+            <button class="btn btn-secondary" id="level-start" disabled>Messen</button>
+            <button class="btn btn-secondary" id="level-stop" hidden>Anhalten</button>
+          </div>
+          <div id="levels" class="levels"></div>
+          <canvas id="level-graph" height="180" hidden></canvas>
+          <span class="muted small">
+            Wie der Laptimer: <code>PROTOCOL MONITOR</code>, die Kanäle, <code>METRICS RSSI</code>,
+            <code>LEVELBATCH 10</code>. „Anhalten“ schaltet zurück in den stummen Startmodus (<code>PROTOCOL RH</code>).
+          </span>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          Konsole
+          <span class="end muted small" id="frame-rate"></span>
+        </div>
+        <div class="panel-body stack">
+          <div class="log console" id="console"></div>
+          <form class="row" id="cmd-form">
+            <input class="grow mono" id="cmd" placeholder="Befehl, z. B. INFO, NAME?, CONFIG?, GAIN?" autocomplete="off" disabled />
+            <button class="btn btn-secondary" type="submit" id="cmd-send" disabled>Senden</button>
+            <button class="btn btn-ghost" type="button" id="console-clear">Leeren</button>
+          </form>
+          <span class="muted small">Binär-Frames (Pegel, Spektrum) werden nur gezählt, Textzeilen stehen hier.</span>
+        </div>
+      </section>
+    </main>
+
+    <footer class="muted small">
+      Firmware: <a href="https://github.com/CapnBry/widscan58">widscan58</a> von Bryan Mayland, erweitert für den
+      <a href="https://github.com/bli-blu-bla/fpv-laptimer">FPV Laptimer</a>. GPL-3.0-or-later.
+    </footer>
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>

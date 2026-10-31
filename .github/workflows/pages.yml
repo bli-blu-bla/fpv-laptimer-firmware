@@ -1,0 +1,63 @@
+# The page on GitHub Pages (https://<owner>.github.io/fpv-laptimer-firmware/):
+# flash the latest released firmware, look at a board, name it. Built from
+# web/ on main, with the firmware of the latest release (not built here, so
+# a change to the page needs no new firmware). release.yml calls this after
+# each release; it also runs on a push to main that changes web/, and by hand.
+#
+# One-time setup: Settings → Pages → Build and deployment → Source: GitHub Actions.
+name: Pages
+
+on:
+  push:
+    branches: [main]
+    paths: ['web/**', '.github/workflows/pages.yml']
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main # also when called from a tag's release run
+      - name: Firmware of the latest release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p dl web/public/firmware
+          gh release download --repo "$GITHUB_REPOSITORY" --pattern 'fpv-laptimer-firmware-*.tar.gz*' --dir dl
+          (cd dl && sha256sum -c ./*.sha256)
+          tar -xzf dl/*.tar.gz -C web/public/firmware
+          jq -r .version web/public/firmware/manifest.json
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - working-directory: web
+        run: |
+          npm ci --no-audit --no-fund
+          npm run build
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: web/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5

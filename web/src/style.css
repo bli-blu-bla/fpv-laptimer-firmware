@@ -1,0 +1,337 @@
+/* Colours and controls of the laptimer's page (design system "Nocturne"):
+   dark only, orange accent. GPL-3.0-or-later. */
+:root {
+  color-scheme: dark;
+  --bg: #161826;
+  --surface: #232532;
+  --surface-2: #1b1d29;
+  --text: #e9e9ed;
+  --divider: color-mix(in srgb, #e9e9ed 16%, transparent);
+  --n400: #b2b6ca;
+  --n500: #9397ab;
+  --n600: #75798c;
+  --n800: #3f424d;
+  --n900: #292b31;
+  --accent: #ff8a3d;
+  --accent-300: #ffc39f;
+  --accent-800: #6b3613;
+  --ok: #5fd38a;
+  --bad: #ff6b6b;
+  --warn: #ffb347;
+  --r-md: 8px;
+  --r-lg: 14px;
+}
+
+* {
+  box-sizing: border-box;
+}
+html {
+  background: var(--bg);
+}
+body {
+  margin: 0 auto;
+  max-width: 880px;
+  padding: 16px;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.45;
+}
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+h1 {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 600;
+}
+p {
+  margin: 0;
+}
+code,
+.mono {
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 0.92em;
+}
+.small {
+  font-size: 13px;
+}
+.muted {
+  color: var(--n500);
+}
+.error {
+  color: var(--bad);
+}
+.ok {
+  color: var(--ok);
+}
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+[hidden] {
+  display: none !important;
+}
+
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 24px;
+  flex-wrap: wrap;
+  padding: 8px 0 20px;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.top nav {
+  display: flex;
+  gap: 16px;
+}
+main {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+footer {
+  padding: 24px 0 8px;
+}
+
+.panel {
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  box-shadow: 0 0 0 1px var(--n800);
+}
+.panel-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  font-weight: 500;
+}
+.panel-head .end {
+  margin-left: auto;
+  text-align: right;
+}
+.panel-body {
+  padding: 0 16px 16px;
+}
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.stack-tight {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.row {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.row > .muted {
+  align-self: center;
+}
+.grow {
+  flex: 1;
+  min-width: 200px;
+}
+.notice {
+  padding: 12px 16px;
+  border-radius: var(--r-md);
+  background: color-mix(in srgb, var(--warn) 14%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--warn) 45%, transparent);
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--n600);
+}
+.dot.on {
+  background: var(--ok);
+}
+.dot.warn {
+  background: var(--warn);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 16px;
+  font: inherit;
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--r-md);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.btn-primary {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+.btn-primary:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+.btn-secondary {
+  border-color: var(--divider);
+}
+.btn-secondary:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--text) 7%, transparent);
+}
+.btn-ghost {
+  color: var(--accent);
+}
+.btn-ghost:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+input {
+  min-height: 44px;
+  padding: 0 12px;
+  font: inherit;
+  color: var(--text);
+  background: var(--surface-2);
+  border: 1px solid var(--divider);
+  border-radius: var(--r-md);
+  min-width: 0;
+}
+input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+input:disabled {
+  opacity: 0.6;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 6px;
+  background: var(--n800);
+  color: #f3f5fe;
+  white-space: nowrap;
+  vertical-align: 1px;
+}
+.tag-accent {
+  background: var(--accent-800);
+  color: #fff2ea;
+}
+.tag-ok {
+  background: color-mix(in srgb, var(--ok) 25%, var(--surface));
+}
+
+.info {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 6px 16px;
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+}
+.info dt {
+  color: var(--n500);
+}
+.info dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.bar {
+  height: 10px;
+  border-radius: 5px;
+  background: var(--n900);
+  overflow: hidden;
+}
+.bar .fill {
+  height: 100%;
+  width: 0;
+  background: var(--accent);
+  transition: width 0.15s linear;
+}
+
+.log {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 12.5px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 200px;
+  overflow: auto;
+}
+.console {
+  height: 260px;
+  max-height: none;
+}
+.console:empty::before {
+  content: 'Noch nichts empfangen.';
+  color: var(--n600);
+}
+.console .out {
+  color: var(--accent-300);
+}
+.console .in {
+  color: var(--text);
+}
+.console .err {
+  color: var(--bad);
+}
+
+.levels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+}
+.levels:empty {
+  display: none;
+}
+.level {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.level b {
+  color: var(--lane);
+  font-weight: 600;
+}
+#level-graph {
+  width: 100%;
+  height: 180px;
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+}
+
+@media (max-width: 520px) {
+  .top nav {
+    width: 100%;
+  }
+  .row .btn {
+    flex: 1;
+  }
+}

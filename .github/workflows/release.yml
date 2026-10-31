@@ -1,0 +1,65 @@
+# A release on a tag "v*" (git tag v0.2.0 && git push origin v0.2.0): the
+# firmware built once, attached to a GitHub release as
+# fpv-laptimer-firmware-<version>.tar.gz (manifest.json + esp32c5/*.bin, the
+# folder the laptimer's page and server flash from) with its .sha256; then
+# the page on GitHub Pages is rebuilt with it (pages.yml).
+#
+# The laptimer picks a release with its tools/fetch_firmware.sh --update
+# <version>, which pins version and sha256 in its firmware.env.
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # gh release create
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0 # git describe: the firmware's version
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+      - uses: actions/cache@v6
+        with:
+          path: |
+            ~/.platformio
+            !~/.platformio/.cache
+          key: platformio-${{ runner.os }}-${{ hashFiles('firmware/platformio.ini') }}
+
+      - name: Build
+        run: |
+          pip install --quiet platformio
+          pio run -d firmware -e esp32c5
+          tools/stage_firmware.py --tar dist
+          # The tag decides the version; a build that says otherwise
+          # (a dirty tree, a tag on another commit) must not be released.
+          test -f "dist/fpv-laptimer-firmware-${GITHUB_REF_NAME#v}.tar.gz"
+
+      - name: Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version=${GITHUB_REF_NAME#v}
+          pre=""
+          case $version in *-*) pre=--prerelease ;; esac
+          notes="Firmware $version für die ESP32-C5-Boards des FPV Laptimers.
+
+          Aufspielen im Browser (Chrome/Edge): https://${GITHUB_REPOSITORY_OWNER}.github.io/${GITHUB_REPOSITORY#*/}/
+          oder im Laptimer unter Boards → Firmware, sobald er diese Version mitbringt."
+          gh release create "$GITHUB_REF_NAME" dist/* --repo "$GITHUB_REPOSITORY" \
+            --title "Firmware $version" --notes "$notes" $pre
+
+  pages:
+    needs: build
+    # Pre-releases stay off the page; it offers the latest release.
+    if: ${{ !contains(github.ref_name, '-') }}
+    uses: ./.github/workflows/pages.yml
+    permissions:
+      contents: read
+      pages: write
+      id-token: write

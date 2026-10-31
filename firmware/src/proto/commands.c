@@ -1,7 +1,7 @@
 /* Host protocols: our ASCII commands (monitor mode) and RotorHazard's node
  * protocol (rh.c). See PLAN.md section 4.9. GPL-3.0-or-later.
  *
- * Modified for the FPV Laptimer (github.com/bli-blu-bla/fpv-laptimer), see NOTICE.md there:
+ * Modified for the FPV Laptimer (github.com/bli-blu-bla/fpv-laptimer-firmware), see NOTICE.md:
  * 2026-10-22 commands LEVELBATCH and TIME?, 2026-10-26 commands NAME and NAME?.
  *
  * The device boots silent, in RotorHazard mode: it sends nothing until

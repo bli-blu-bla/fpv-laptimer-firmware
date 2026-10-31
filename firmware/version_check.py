@@ -4,7 +4,11 @@
 # When git describe differs from the version the build was configured with,
 # age CMakeCache.txt so the espidf builder reconfigures.
 # GPL-3.0-or-later.
+#
+# Modified for the FPV Laptimer (github.com/bli-blu-bla/fpv-laptimer-firmware), see NOTICE.md:
+# 2026-10-31 compare without the tag's leading "v", like CMakeLists.txt.
 import json
+import re
 import os
 import subprocess
 
@@ -17,6 +21,7 @@ try:
     want = subprocess.run(["git", "describe", "--tags", "--always", "--dirty"],
                           cwd=env.subst("$PROJECT_DIR"), capture_output=True,  # noqa: F821
                           text=True).stdout.strip() or "unknown"
+    want = re.sub(r"^v(?=[0-9])", "", want)
     with open(desc) as fp:
         have = json.load(fp).get("project_version")
 except (OSError, ValueError):

@@ -1,6 +1,6 @@
 /* Round-robin hop loop. Owns the radio. GPL-3.0-or-later.
  *
- * Modified for the FPV Laptimer (github.com/bli-blu-bla/fpv-laptimer), see NOTICE.md there:
+ * Modified for the FPV Laptimer (github.com/bli-blu-bla/fpv-laptimer-firmware), see NOTICE.md:
  * 2026-10-22 level batches (LEVELBATCH). */
 #pragma once
 #include <stdbool.h>

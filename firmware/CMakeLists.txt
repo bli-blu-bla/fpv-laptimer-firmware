@@ -1,3 +1,5 @@
+# Modified for the FPV Laptimer (github.com/bli-blu-bla/fpv-laptimer-firmware), see NOTICE.md:
+# 2026-10-31 version without the tag's leading "v" (v0.1.0 -> 0.1.0).
 cmake_minimum_required(VERSION 3.16)
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 # One component lock per target: the component manager rewrites the lock's
@@ -13,6 +15,8 @@ execute_process(COMMAND git describe --tags --always --dirty
 if(NOT PROJECT_VER)
     set(PROJECT_VER "unknown")
 endif()
+# Tag v0.1.0 -> version 0.1.0, as the laptimer server and pages compare it.
+string(REGEX REPLACE "^v([0-9])" "\\1" PROJECT_VER "${PROJECT_VER}")
 # HEAD's commit time (ISO 8601), also in INFO. It changes only with HEAD, so
 # version_check.py's reconfigure on a new git describe keeps it current too.
 execute_process(COMMAND git log -1 --format=%cI

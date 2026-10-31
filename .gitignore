@@ -1,0 +1,19 @@
+# Firmware build output and generated config
+firmware/.pio/
+firmware/sdkconfig.*
+!firmware/sdkconfig.defaults
+!firmware/sdkconfig.defaults.*
+firmware/managed_components/
+firmware/cmake-build-*/
+.idea/
+
+# Web page
+web/node_modules/
+web/dist/
+# Staged firmware (tools/stage_firmware.py)
+web/public/firmware/
+dist/
+
+# Python
+__pycache__/
+tools/.venv-flash/
