@@ -1,8 +1,10 @@
 # The page on GitHub Pages (https://<owner>.github.io/fpv-laptimer-firmware/):
 # flash the latest released firmware, look at a board, name it. Built from
 # web/ on main, with the firmware of the latest release (not built here, so
-# a change to the page needs no new firmware). release.yml calls this after
-# each release; it also runs on a push to main that changes web/, and by hand.
+# a change to the page needs no new firmware). release.yml starts this after
+# each release (gh workflow run, on main: the github-pages environment only
+# deploys from main); it also runs on a push to main that changes web/, and
+# by hand.
 #
 # One-time setup: Settings → Pages → Build and deployment → Source: GitHub Actions.
 name: Pages
@@ -12,7 +14,6 @@ on:
     branches: [main]
     paths: ['web/**', '.github/workflows/pages.yml']
   workflow_dispatch:
-  workflow_call:
 
 permissions:
   contents: read
@@ -28,8 +29,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-        with:
-          ref: main # also when called from a tag's release run
       - name: Firmware of the latest release
         env:
           GH_TOKEN: ${{ github.token }}

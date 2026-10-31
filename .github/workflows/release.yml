@@ -2,7 +2,7 @@
 # firmware built once, attached to a GitHub release as
 # fpv-laptimer-firmware-<version>.tar.gz (manifest.json + esp32c5/*.bin, the
 # folder the laptimer's page and server flash from) with its .sha256; then
-# the page on GitHub Pages is rebuilt with it (pages.yml).
+# the page on GitHub Pages is rebuilt with it (pages.yml, run on main).
 #
 # The laptimer picks a release with its tools/fetch_firmware.sh --update
 # <version>, which pins version and sha256 in its firmware.env.
@@ -17,6 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write # gh release create
+      actions: write # gh workflow run (the page)
     steps:
       - uses: actions/checkout@v7
         with:
@@ -54,12 +55,11 @@ jobs:
           gh release create "$GITHUB_REF_NAME" dist/* --repo "$GITHUB_REPOSITORY" \
             --title "Firmware $version" --notes "$notes" $pre
 
-  pages:
-    needs: build
-    # Pre-releases stay off the page; it offers the latest release.
-    if: ${{ !contains(github.ref_name, '-') }}
-    uses: ./.github/workflows/pages.yml
-    permissions:
-      contents: read
-      pages: write
-      id-token: write
+      # The page, rebuilt with this release. Started on main: the
+      # github-pages environment only deploys from there, not from a tag.
+      # Pre-releases stay off the page; it offers the latest release.
+      - name: Page
+        if: ${{ !contains(github.ref_name, '-') }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run pages.yml --repo "$GITHUB_REPOSITORY" --ref main
