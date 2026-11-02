@@ -19,6 +19,7 @@ Empfänger, der die FPV-Kanäle reihum misst.
   | 2026-10-22 | Befehle `LEVELBATCH` (Pegel aller Kanäle als ein Frame, Typ 7) und `TIME?` (Uhrabgleich mehrerer Boards) | `src/proto/commands.c`, `src/proto/frames.h`, `src/scan/scanner.c`, `src/scan/scanner.h` |
   | 2026-10-26 | Befehle `NAME`, `NAME?` (Name des Boards im NVS) | `src/proto/commands.c` |
   | 2026-10-31 | Version ohne das „v“ des Tags (`v0.1.0` → `0.1.0`) | `CMakeLists.txt`, `version_check.py` |
+  | 2026-11-02 | Befehl `TEMP` (auch `TEMP?`): Temperatur des Chips | `src/proto/commands.c`, `src/CMakeLists.txt` |
 
 - Abgeleitet aus widscan58: `web/src/flasher.js` (aus `web/src/serial/flasher.ts`),
   `web/src/link.js` (Leseschleife aus `web/src/serial/device.ts`), `tools/stage_firmware.py`

@@ -2,7 +2,8 @@
  * protocol (rh.c). See PLAN.md section 4.9. GPL-3.0-or-later.
  *
  * Modified for the FPV Laptimer (github.com/bli-blu-bla/fpv-laptimer-firmware), see NOTICE.md:
- * 2026-10-22 commands LEVELBATCH and TIME?, 2026-10-26 commands NAME and NAME?.
+ * 2026-10-22 commands LEVELBATCH and TIME?, 2026-10-26 commands NAME and NAME?,
+ * 2026-11-02 command TEMP (TEMP?): the chip's temperature.
  *
  * The device boots silent, in RotorHazard mode: it sends nothing until
  * asked, which is what a RotorHazard server expects of a node. Our hosts
@@ -26,6 +27,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
+#include "driver/temperature_sensor.h"
 #include "esp_app_desc.h"
 #include "esp_system.h"
 #include "esp_timer.h"
@@ -279,7 +281,7 @@ static bool rh_allowed(const char *line) {
                                         "METRICS RSSI", "METRICS SNR", "METRICS?", "GAIN?", "GAIN HARDWARE",
                                         "FILTER AUTO", "MODE GROUP", "MODE SINGLE", "CONFIG SAVE",
                                         "CONFIG RESET", "RECAL", "LEVELFILTER MEDIAN", "LEVELFILTER EMA",
-                                        "LEVELFILTER?", "PHYIDLE?", "GPIO?", "TIME?", "NAME", "NAME?"};
+                                        "LEVELFILTER?", "PHYIDLE?", "GPIO?", "TIME?", "NAME", "NAME?", "TEMP", "TEMP?"};
     static const char *const prefix[] = {"GAIN MANUAL ", "FFT ", "FILTER ", "IQCORR ", "PHYIDLE ", "THROTTLE ", "GPIO ", "NAME "};
     for (unsigned j = 0; j < sizeof(exact) / sizeof(exact[0]); j++)
         if (!strcmp(line, exact[j])) return true;
@@ -335,6 +337,26 @@ static void send_gpio(void) {
     reply_send();
 }
 
+/* The chip's internal temperature sensor, installed on the first TEMP. The
+ * driver picks its measuring range by itself as the temperature moves. */
+static temperature_sensor_handle_t tsens;
+
+static esp_err_t temp_read(float *celsius) {
+    if (!tsens) {
+        temperature_sensor_config_t cfg = TEMPERATURE_SENSOR_CONFIG_DEFAULT(-10, 80);
+        temperature_sensor_handle_t h;
+        esp_err_t e = temperature_sensor_install(&cfg, &h);
+        if (e != ESP_OK) return e;
+        e = temperature_sensor_enable(h);
+        if (e != ESP_OK) {
+            temperature_sensor_uninstall(h);
+            return e;
+        }
+        tsens = h;
+    }
+    return temperature_sensor_get_celsius(tsens, celsius);
+}
+
 static bool parse_u32(const char *s, uint32_t *v) {
     char *end;
     unsigned long x = strtoul(s, &end, 0);
@@ -388,6 +410,12 @@ static void handle(char *line) {
     } else if (!strcmp(line, "TIME?")) {
         /* The clock of the frame timestamps, for hosts that line up several boards. */
         link_printf("TIME %" PRId64 "\n", esp_timer_get_time());
+    } else if (!strcmp(line, "TEMP") || !strcmp(line, "TEMP?")) {
+        /* The chip's temperature in °C, one decimal. */
+        float t;
+        esp_err_t e = temp_read(&t);
+        if (e != ESP_OK) { link_printf("ERR temp %s\n", esp_err_to_name(e)); return; }
+        link_printf("TEMP %.1f\n", (double)t);
     } else if (!strcmp(line, "NAME?")) {
         link_printf("NAME%s%s\n", board_name[0] ? " " : "", board_name);
     } else if (!strcmp(line, "NAME") || !strncmp(line, "NAME ", 5)) {
